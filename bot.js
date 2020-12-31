@@ -51,7 +51,7 @@ const connectToServer = () => {
 		// Once bot spawns, attack mobType (wither skeleton) every 1 second
 		bot.once('spawn', () => {
 			setInterval(() => {
-				const mobFilter = e => e.mobType === 'Wither Skeleton'
+				const mobFilter = e => e.mobType === 'Wither Skeleton' || 'Enderman'
 
 				const mob = bot.nearestEntity(mobFilter)
 
@@ -61,7 +61,7 @@ const connectToServer = () => {
 				bot.lookAt(pos, true, () => {
 					bot.attack(mob)
 				})
-			}, 1000)
+			}, 626)
 		})
 	}
 }
