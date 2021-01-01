@@ -48,16 +48,25 @@ const connectToServer = () => {
 			relog()
 		})
 
-		// Once bot spawns, attack mobType (wither skeleton) every 1 second
+		// Once bot spawns, attack mobType every 626ms
 		bot.once('spawn', () => {
 			setInterval(() => {
-				const mobFilter = e => e.mobType === 'Wither Skeleton' || 'Enderman'
+				// detect wither skeleton
+				const skeletonFilter = e => e.mobType === 'Wither Skeleton'
 
-				const mob = bot.nearestEntity(mobFilter)
+				// detect enderman
+				const endermanFilter = e =>
+					e.position.y <= 178.5 && e.position.y >= 177 && e.mobType === 'Enderman'
+
+				// Mob is either enderman or wither skeleton, only true for eman if in eman farm
+				const mob = bot.nearestEntity(endermanFilter) || bot.nearestEntity(skeletonFilter)
 
 				if (!mob) return
 
+				// position of mob
 				const pos = mob.position
+
+				// attack mob
 				bot.lookAt(pos, true, () => {
 					bot.attack(mob)
 				})
