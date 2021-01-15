@@ -1,5 +1,6 @@
 const mineflayer = require('mineflayer')
 const autoeat = require('mineflayer-auto-eat')
+const pm2 = require('pm2')
 
 require('dotenv').config()
 
@@ -19,14 +20,19 @@ const connectToServer = () => {
 
 	// Attempts to relog 60s after being called
 	function relog() {
-		bot.end()
-
 		console.log('Attempting to reconnect...')
 
-		setTimeout(() => {
-			bot = mineflayer.createBot(options)
-			bindEvents(bot)
-		}, 60000)
+		pm2.connect(err => {
+			if (err) throw err
+
+			pm2.restart('mister', () => {})
+		})
+		// bot.end()
+
+		// setTimeout(() => {
+		// 	bot = mineflayer.createBot(options)
+		// 	bindEvents(bot)
+		// }, 60000)
 	}
 
 	function bindEvents(bot) {
