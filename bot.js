@@ -44,7 +44,13 @@ const connectToServer = () => {
 		// On error, relog
 		bot.on('kicked', reason => {
 			console.log('Bot kicked for reason: ' + reason)
-			relog()
+			if (reason.extra[0].text.includes('Server Restart')) {
+				setTimeout(() => {
+					pm2.restart('app', () => {})
+				}, 60000 * 15)
+			} else {
+				relog()
+			}
 		})
 
 		// On kick, relog
