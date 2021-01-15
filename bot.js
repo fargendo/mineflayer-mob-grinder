@@ -54,7 +54,7 @@ const connectToServer = () => {
 		})
 
 		// Once bot spawns, attack mobType every 626ms
-		bot.ssonce('spawn', () => {
+		bot.once('spawn', () => {
 			console.log('bot spawned')
 
 			// For Testing
