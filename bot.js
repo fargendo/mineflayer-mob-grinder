@@ -56,6 +56,7 @@ const connectToServer = () => {
 
 		// Once bot spawns, attack mobType every 626ms
 		bot.once('spawn', () => {
+			console.log('bot spawned')
 			setInterval(() => {
 				// detect wither skeleton
 				const skeletonFilter = e => e.mobType === 'Wither Skeleton'
