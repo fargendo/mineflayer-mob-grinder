@@ -22,11 +22,10 @@ const connectToServer = () => {
 	function relog() {
 		console.log('Attempting to reconnect...')
 
-		pm2.connect(err => {
-			if (err) throw err
+		setTimeout(() => {
+			pm2.restart('app', () => {})
+		}, 60000)
 
-			pm2.restart('mister', () => {})
-		})
 		// bot.end()
 
 		// setTimeout(() => {
@@ -55,8 +54,18 @@ const connectToServer = () => {
 		})
 
 		// Once bot spawns, attack mobType every 626ms
-		bot.once('spawn', () => {
+		bot.ssonce('spawn', () => {
 			console.log('bot spawned')
+
+			// For Testing
+			// bot.on('chat', function (username, message) {
+			// 	if ((username = 'Fargendo')) {
+			// 		if (message === 'quit') {
+			// 			bot.end()
+			// 		}
+			// 	}
+			// })
+
 			setInterval(() => {
 				// detect wither skeleton
 				const skeletonFilter = e => e.mobType === 'Wither Skeleton'
