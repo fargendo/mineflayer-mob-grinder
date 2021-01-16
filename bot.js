@@ -1,8 +1,12 @@
 const mineflayer = require('mineflayer')
 const autoeat = require('mineflayer-auto-eat')
 const pm2 = require('pm2')
+const parseMessage = require('./parseMessage')
+const sendToDiscord = require('./sendToDiscord')
 
 require('dotenv').config()
+
+const pm2Process = 'fagman'
 
 const connectToServer = () => {
 	let options = {
@@ -22,7 +26,7 @@ const connectToServer = () => {
 	function relog() {
 		setTimeout(() => {
 			console.log('Attempting to reconnect...')
-			pm2.restart('app', () => {})
+			pm2.restart(pm2Process, () => {})
 		}, 60000)
 
 		// bot.end()
@@ -53,7 +57,7 @@ const connectToServer = () => {
 				console.log('server closed, attempt reconnect in 2 minutes...')
 				setTimeout(() => {
 					console.log('Attempting to reconnect')
-					pm2.restart('app', () => {})
+					pm2.restart(pm2Process, () => {})
 				}, 60000 * 2)
 			} else {
 				relog()
@@ -64,14 +68,11 @@ const connectToServer = () => {
 		bot.once('spawn', () => {
 			console.log('bot spawned')
 
-			// For Testing
-			// bot.on('chat', function (username, message) {
-			// 	if ((username = 'Fargendo')) {
-			// 		if (message === 'quit') {
-			// 			bot.end()
-			// 		}
-			// 	}
-			// })
+			bot.on('chat', function (username, message) {
+				// console.log(username + ' : ' + message)
+
+				sendToDiscord(username, message)
+			})
 
 			setInterval(() => {
 				// detect wither skeleton
