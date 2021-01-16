@@ -6,7 +6,7 @@ require('dotenv').config()
 
 const connectToServer = () => {
 	let options = {
-		host: 'netheranarchy.org',
+		host: 'destroymc.net',
 		port: 25565,
 		username: process.env.MC_USER,
 		password: process.env.MC_PASS,
@@ -20,9 +20,8 @@ const connectToServer = () => {
 
 	// Attempts to relog 60s after being called
 	function relog() {
-		console.log('Attempting to reconnect...')
-
 		setTimeout(() => {
+			console.log('Attempting to reconnect...')
 			pm2.restart('app', () => {})
 		}, 60000)
 
@@ -44,19 +43,21 @@ const connectToServer = () => {
 		// On error, relog
 		bot.on('kicked', reason => {
 			console.log('Bot kicked for reason: ' + reason)
-			if (reason.extra[0].text.includes('Server Restart')) {
-				setTimeout(() => {
-					pm2.restart('app', () => {})
-				}, 60000 * 15)
-			} else {
-				relog()
-			}
+			relog()
 		})
 
 		// On kick, relog
 		bot.on('end', err => {
 			console.log('Bot ended with error: ' + err)
-			relog()
+			if (err == undefined) {
+				console.log('server closed, attempt reconnect in 2 minutes...')
+				setTimeout(() => {
+					console.log('Attempting to reconnect')
+					pm2.restart('app', () => {})
+				}, 60000 * 2)
+			} else {
+				relog()
+			}
 		})
 
 		// Once bot spawns, attack mobType every 626ms
