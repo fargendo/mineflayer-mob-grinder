@@ -6,7 +6,7 @@ require('dotenv').config()
 
 const connectToServer = () => {
 	let options = {
-		host: 'destroymc.net',
+		host: 'anarchy.fit',
 		port: 25565,
 		username: process.env.MC_USER,
 		password: process.env.MC_PASS,
