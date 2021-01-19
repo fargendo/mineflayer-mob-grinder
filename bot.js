@@ -3,12 +3,53 @@ const autoeat = require('mineflayer-auto-eat')
 const pm2 = require('pm2')
 const parseMessage = require('./parseMessage')
 const sendToDiscord = require('./sendToDiscord')
+const WebSocket = require('ws')
+const ws = new WebSocket('ws://localhost:9000')
 
 require('dotenv').config()
 
-const pm2Process = 'fagman'
+connectWS()
+
+function connectWS() {
+	const reconnectInterval = 3000
+
+	ws.on('message', function incoming(data) {
+		const message = JSON.parse(data)
+		console.log(message)
+
+		// console.log(message.type)
+
+		// if (message.type.startsWith('dmcchat')) {
+		// 	console.log('dmcchat type')
+		// 	receiveMessage(bot, message.message)
+		// }
+
+		// if (message.type.startsWith('donfuer')) {
+		// 	console.log('donfuer type')
+		// 	receiveDFMessage(bot, message.message)
+		// }
+	})
+	ws.on('open', function open() {
+		console.log('WS re/connected')
+	})
+
+	ws.on('error', function (err) {
+		console.log('WS error: ' + err)
+	})
+
+	ws.on('close', function () {
+		console.log('WS connection closed.')
+		setTimeout(() => {
+			console.log('Restarting pm2 process...')
+			pm2.restart(pm2Process, () => {})
+		}, 10000)
+		// setTimeout(connectWS, reconnectInterval)
+		// connectToServer.relog()
+	})
+}
 
 const connectToServer = () => {
+	const pm2Process = 'mister'
 	let options = {
 		host: 'anarchy.fit',
 		port: 25565,
@@ -66,12 +107,25 @@ const connectToServer = () => {
 
 		// Once bot spawns, attack mobType every 626ms
 		bot.once('spawn', () => {
+			let playersLength
+
+			setInterval(() => {
+				playersLength = Object.keys(bot.players).length
+				console.log(playersLength)
+				const body = {
+					type: 'playersLength',
+					playersLength: playersLength,
+				}
+				ws.send(JSON.stringify(body))
+			}, 1000 * 30)
+
 			console.log('bot spawned')
+			console.log(playersLength)
 
 			bot.on('chat', function (username, message) {
 				// console.log(username + ' : ' + message)
 
-				sendToDiscord(username, message)
+				sendToDiscord(username, message, ws)
 			})
 
 			setInterval(() => {
