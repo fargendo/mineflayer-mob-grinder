@@ -4,49 +4,10 @@ const pm2 = require('pm2')
 const parseMessage = require('./parseMessage')
 const sendToDiscord = require('./sendToDiscord')
 const WebSocket = require('ws')
+const sendChat = require('./sendChat')
 const ws = new WebSocket('ws://localhost:9000')
 
 require('dotenv').config()
-
-connectWS()
-
-function connectWS() {
-	const reconnectInterval = 3000
-
-	ws.on('message', function incoming(data) {
-		const message = JSON.parse(data)
-		console.log(message)
-
-		// console.log(message.type)
-
-		// if (message.type.startsWith('dmcchat')) {
-		// 	console.log('dmcchat type')
-		// 	receiveMessage(bot, message.message)
-		// }
-
-		// if (message.type.startsWith('donfuer')) {
-		// 	console.log('donfuer type')
-		// 	receiveDFMessage(bot, message.message)
-		// }
-	})
-	ws.on('open', function open() {
-		console.log('WS re/connected')
-	})
-
-	ws.on('error', function (err) {
-		console.log('WS error: ' + err)
-	})
-
-	ws.on('close', function () {
-		console.log('WS connection closed.')
-		setTimeout(() => {
-			console.log('Restarting pm2 process...')
-			pm2.restart(pm2Process, () => {})
-		}, 10000)
-		// setTimeout(connectWS, reconnectInterval)
-		// connectToServer.relog()
-	})
-}
 
 const connectToServer = () => {
 	const pm2Process = 'mister'
@@ -57,11 +18,52 @@ const connectToServer = () => {
 		password: process.env.MC_PASS,
 		version: '1.16.4',
 	}
-
 	// connect bot to server
-	let bot = mineflayer.createBot(options)
+	const bot = mineflayer.createBot(options)
 
+	connectWS()
 	bindEvents(bot)
+
+	function connectWS() {
+		const reconnectInterval = 3000
+
+		ws.on('message', function incoming(data) {
+			const message = JSON.parse(data)
+			const chatMessage = message.message
+			console.log(chatMessage)
+
+			sendChat(bot, chatMessage)
+
+			// console.log(message.type)
+
+			// if (message.type.startsWith('dmcchat')) {
+			// 	console.log('dmcchat type')
+			// 	receiveMessage(bot, message.message)
+			// }
+
+			// if (message.type.startsWith('donfuer')) {
+			// 	console.log('donfuer type')
+			// 	receiveDFMessage(bot, message.message)
+			// }
+		})
+		ws.on('open', function open() {
+			console.log('WS re/connected')
+		})
+
+		ws.on('error', function (err) {
+			console.log('WS error: ' + err)
+		})
+
+		ws.on('close', function () {
+			console.log('WS connection closed.')
+			setTimeout(() => {
+				console.log('Restarting pm2 process...')
+				pm2.restart(pm2Process, () => {})
+			}, 10000)
+			// setTimeout(connectWS, reconnectInterval)
+			// connectToServer.relog()
+		})
+	}
 
 	// Attempts to relog 60s after being called
 	function relog() {
@@ -129,7 +131,7 @@ const connectToServer = () => {
 			})
 
 			setInterval(() => {
-				// detect wither skeleton
+				// detect wither skeletonf
 				const skeletonFilter = e => e.mobType === 'Wither Skeleton'
 
 				// detect enderman

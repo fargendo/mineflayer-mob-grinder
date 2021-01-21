@@ -1,5 +1,5 @@
-const sendChat = (bot, data) => {
-	bot.chat(data)
+const sendChat = (bot, message) => {
+	bot.chat(message)
 }
 
 module.exports = sendChat
