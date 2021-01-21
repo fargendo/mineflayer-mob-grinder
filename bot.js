@@ -20,9 +20,8 @@ const connectToServer = () => {
 	}
 	// connect bot to server
 	const bot = mineflayer.createBot(options)
-
-	connectWS()
 	bindEvents(bot)
+	connectWS()
 
 	function connectWS() {
 		const reconnectInterval = 3000
