@@ -5,7 +5,8 @@ const sendMessage = (username, message, ws) => {
 	if (
 		!username.includes('Discord') &&
 		!message.includes('@everyone') &&
-		!message.includes('@here')
+		!message.includes('@here') &&
+		!username.includes('me]')
 	) {
 		if (
 			(username.startsWith('_') && username.endsWith('_')) ||

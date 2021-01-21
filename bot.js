@@ -32,18 +32,6 @@ const connectToServer = () => {
 			console.log(chatMessage)
 
 			sendChat(bot, chatMessage)
-
-			// console.log(message.type)
-
-			// if (message.type.startsWith('dmcchat')) {
-			// 	console.log('dmcchat type')
-			// 	receiveMessage(bot, message.message)
-			// }
-
-			// if (message.type.startsWith('donfuer')) {
-			// 	console.log('donfuer type')
-			// 	receiveDFMessage(bot, message.message)
-			// }
 		})
 		ws.on('open', function open() {
 			console.log('WS re/connected')
@@ -70,13 +58,6 @@ const connectToServer = () => {
 			console.log('Attempting to reconnect...')
 			pm2.restart(pm2Process, () => {})
 		}, 60000)
-
-		// bot.end()
-
-		// setTimeout(() => {
-		// 	bot = mineflayer.createBot(options)
-		// 	bindEvents(bot)
-		// }, 60000)
 	}
 
 	function bindEvents(bot) {
@@ -124,8 +105,6 @@ const connectToServer = () => {
 			console.log(playersLength)
 
 			bot.on('chat', function (username, message) {
-				// console.log(username + ' : ' + message)
-
 				sendToDiscord(username, message, ws)
 			})
 
