@@ -5,7 +5,7 @@ const parseMessage = require('./parseMessage')
 const sendToDiscord = require('./sendToDiscord')
 const WebSocket = require('ws')
 const sendChat = require('./sendChat')
-const ws = new WebSocket('ws://localhost:9000')
+//const ws = new WebSocket('ws://localhost:9000')
 
 require('dotenv').config()
 
@@ -21,36 +21,36 @@ const connectToServer = () => {
 	// connect bot to server
 	const bot = mineflayer.createBot(options)
 	bindEvents(bot)
-	connectWS()
+	// connectWS()
 
-	function connectWS() {
-		const reconnectInterval = 3000
+	// function connectWS() {
+	// 	const reconnectInterval = 3000
 
-		ws.on('message', function incoming(data) {
-			const message = JSON.parse(data)
-			const chatMessage = message.message
-			console.log(chatMessage)
+	// 	ws.on('message', function incoming(data) {
+	// 		const message = JSON.parse(data)
+	// 		const chatMessage = message.message
+	// 		console.log(chatMessage)
 
-			sendChat(bot, chatMessage)
-		})
-		ws.on('open', function open() {
-			console.log('WS re/connected')
-		})
+	// 		sendChat(bot, chatMessage)
+	// 	})
+	// 	ws.on('open', function open() {
+	// 		console.log('WS re/connected')
+	// 	})
 
-		ws.on('error', function (err) {
-			console.log('WS error: ' + err)
-		})
+	// 	ws.on('error', function (err) {
+	// 		console.log('WS error: ' + err)
+	// 	})
 
-		ws.on('close', function () {
-			console.log('WS connection closed.')
-			setTimeout(() => {
-				console.log('Restarting pm2 process...')
-				pm2.restart(pm2Process, () => {})
-			}, 10000)
-			// setTimeout(connectWS, reconnectInterval)
-			// connectToServer.relog()
-		})
-	}
+	// 	ws.on('close', function () {
+	// 		console.log('WS connection closed.')
+	// 		setTimeout(() => {
+	// 			console.log('Restarting pm2 process...')
+	// 			pm2.restart(pm2Process, () => {})
+	// 		}, 10000)
+	// 		// setTimeout(connectWS, reconnectInterval)
+	// 		// connectToServer.relog()
+	// 	})
+	// }
 
 	// Attempts to relog 60s after being called
 	function relog() {
@@ -89,44 +89,68 @@ const connectToServer = () => {
 
 		// Once bot spawns, attack mobType every 626ms
 		bot.once('spawn', () => {
-			let playersLength
-
-			setInterval(() => {
-				playersLength = Object.keys(bot.players).length
-				console.log(playersLength)
-				const body = {
-					type: 'playersLength',
-					playersLength: playersLength,
-				}
-				ws.send(JSON.stringify(body))
-			}, 1000 * 30)
-
+			// let playersLength
 			console.log('bot spawned')
-			console.log(playersLength)
+			console.log(bot.entity.position.y)
+			// setInterval(() => {
+			// 	playersLength = Object.keys(bot.players).length
+			// 	console.log(playersLength)
+			// 	const body = {
+			// 		type: 'playersLength',
+			// 		playersLength: playersLength,
+			// 	}
+			// 	ws.send(JSON.stringify(body))
+			// }, 1000 * 30)
 
-			bot.on('chat', function (username, message) {
-				sendToDiscord(username, message, ws)
-			})
+			// console.log('bot spawned')
+			// console.log(playersLength)
+
+			// bot.on('chat', function (username, message) {
+			// 	sendToDiscord(username, message, ws)
+			// })
+
+			// bot._client.on('entity_velocity', v => {
+			// 	console.log(v)
+			// 	if (bot.entity.id !== v.entityId) return
+
+			// 	bot.entity.velocity.x = v.velocityX
+			// 	bot.entity.velocity.y = v.velocityY
+			// 	bot.entity.velocity.z = v.velocityZ
+			// })
 
 			setInterval(() => {
+				console.log(bot.entity.position.y)
 				// detect wither skeletonf
 				const skeletonFilter = e => e.mobType === 'Wither Skeleton'
+
+				//const ignoreMobs = 'Drowned' && 'Phantom'
+
+				const mobber = e =>
+					e.kind === 'Hostile mobs' &&
+					e.mobType !== 'Drowned' &&
+					e.mobType !== 'Phantom' &&
+					e.position.y <= 179 &&
+					e.position.y >= 176
+
+				const mob = bot.nearestEntity(mobber)
 
 				// detect enderman
 				const endermanFilter = e =>
 					e.position.y <= 178.5 && e.position.y >= 177 && e.mobType === 'Enderman'
 
 				// Mob is either enderman or wither skeleton, only true for eman if in eman farm
-				const mob = bot.nearestEntity(endermanFilter) || bot.nearestEntity(skeletonFilter)
+				//const mob = bot.nearestEntity(endermanFilter) || bot.nearestEntity(skeletonFilter)
 
 				if (!mob) return
 
+				console.log(mob.mobType)
 				// position of mob
 				const pos = mob.position
 
 				// attack mob
 				bot.lookAt(pos, true, () => {
 					bot.attack(mob)
+					console.log('sword swung')
 				})
 			}, 626)
 		})
