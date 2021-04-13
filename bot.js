@@ -114,7 +114,7 @@ const connectToServer = () => {
 
 				// detect enderman
 				const endermanFilter = e =>
-					e.position.y <= 178.5 && e.position.y >= 177 && e.mobType === 'Enderman'
+					e.position.y <= 188 && e.position.y >= 186 && e.mobType === 'Enderman'
 
 				// Mob is either enderman or wither skeleton, only true for eman if in eman farm
 				const mob = bot.nearestEntity(endermanFilter) || bot.nearestEntity(skeletonFilter)
