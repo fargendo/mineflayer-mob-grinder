@@ -61,7 +61,7 @@ const connectToServer = () => {
 
 			//Gold farm killswitch
 			if (pm2Process === 'TJOG') {
-				bot.on('whisper', function (username, me, message) {
+				bot.on('whisper', function (username, message) {
 					//console.log(jsonMsg)
 					console.log(username)
 					console.log(message)
