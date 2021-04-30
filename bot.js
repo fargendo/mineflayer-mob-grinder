@@ -1,7 +1,5 @@
 const mineflayer = require('mineflayer')
-const autoeat = require('mineflayer-auto-eat')
 const pm2 = require('pm2')
-//const parseMessage = require('./parseMessage')
 const sendToDiscord = require('./sendToDiscord')
 const WebSocket = require('ws')
 const sendChat = require('./sendChat')
@@ -10,7 +8,7 @@ const ws = new WebSocket('ws://localhost:9000')
 require('dotenv').config()
 
 const connectToServer = () => {
-	const pm2Process = 'mister'
+	const pm2Process = 'fagbot'
 	let options = {
 		host: 'anarchy.fit',
 		port: 25565,
@@ -49,11 +47,19 @@ const connectToServer = () => {
 	}
 
 	// Attempts to relog 60s after being called
-	function relog(time) {
-		setTimeout(() => {
-			console.log('Attempting to reconnect...')
-			pm2.restart(pm2Process, () => {})
-		}, time)
+	function relog(time = 60000, end = false) {
+		console.log('relogging in ' + time + 'ms')
+		if (end) {
+			setTimeout(() => {
+				console.log('Attempting to reconnect...')
+				pm2.restart(pm2Process, () => {})
+			}, time * 2)
+		} else {
+			setTimeout(() => {
+				console.log('Attempting to reconnect...')
+				pm2.restart(pm2Process, () => {})
+			}, time)
+		}
 	}
 
 	function bindEvents(bot) {
@@ -72,15 +78,7 @@ const connectToServer = () => {
 		// On kick, relog
 		bot.on('end', err => {
 			console.log('Bot ended with error: ' + err)
-			if (err == undefined) {
-				console.log('server closed, attempt reconnect in 2 minutes...')
-				setTimeout(() => {
-					console.log('Attempting to reconnect')
-					pm2.restart(pm2Process, () => {})
-				}, 60000 * 2)
-			} else {
-				relog()
-			}
+			relog(undefined, true)
 		})
 
 		// Once bot spawns, attack mobType every 626ms
