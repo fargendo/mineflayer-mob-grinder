@@ -3,7 +3,7 @@ const pm2 = require('pm2')
 require('dotenv').config()
 
 const connectToServer = () => {
-	const pm2Process = 'mister'
+	const pm2Process = process.env.PM2
 	let options = {
 		host: 'netheranarchy.org',
 		port: 25565,
@@ -16,35 +16,43 @@ const connectToServer = () => {
 	bindEvents(bot)
 
 	// Attempts to relog 60s after being called
-	function relog(time) {
-		setTimeout(() => {
-			console.log('Attempting to reconnect...')
-			pm2.restart(pm2Process, () => {})
-		}, time)
+	function relog(time = 60000, end = false) {
+		console.log('relogging in ' + time + 'ms')
+		if (end) {
+			setTimeout(() => {
+				console.log('Attempting to reconnect...')
+				pm2.restart(pm2Process, () => {})
+			}, time * 2)
+		} else {
+			setTimeout(() => {
+				console.log('Attempting to reconnect...')
+				pm2.restart(pm2Process, () => {})
+			}, time)
+		}
 	}
 
 	function bindEvents(bot) {
+		function disconnect(time) {
+			console.log('time: ' + time)
+			bot.quit()
+			relog(time)
+		}
 		// On close, relog
 		bot.on('close', () => {
 			console.log("Bot's connection to server has closed.")
-			relog(60000)
+			relog()
 		})
 
 		// On error, relog
 		bot.on('kicked', reason => {
 			console.log('Bot kicked for reason: ' + reason)
-			relog(60000)
+			relog()
 		})
 
 		// On kick, relog
 		bot.on('end', err => {
 			console.log('Bot ended with error: ' + err)
-			if (err == undefined) {
-				console.log('server closed, attempt reconnect in 2 minutes...')
-				relog(60000 * 2)
-			} else {
-				relog(60000)
-			}
+			//relog(undefined, true)
 		})
 
 		// Once bot spawns, attack mobType every 626ms
@@ -52,13 +60,20 @@ const connectToServer = () => {
 			console.log('bot spawned')
 
 			//Gold farm killswitch
-			if (pm2Process === 'mister') {
-				bot.on('whisper', function (username, message) {
-					console.log(username, message)
+			if (pm2Process === 'TJOG') {
+				bot.on('whisper', function (username, me, message) {
+					//console.log(jsonMsg)
+					console.log(username)
+					console.log(message)
+					//relog(10000)
 					if (message.includes('log')) {
 						let words = message.split(' ')
-						const minutes = parseInt(words[1])
-						relog(60000 * minutes)
+						let minutes
+						if ((minutes = parseInt(words[1]))) {
+							if (minutes <= 360) {
+								disconnect(60000 * minutes)
+							}
+						}
 					}
 				})
 			}
