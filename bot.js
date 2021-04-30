@@ -16,7 +16,7 @@ const connectToServer = () => {
 		port: 25565,
 		username: process.env.MC_USER,
 		password: process.env.MC_PASS,
-		version: '1.16.4',
+		version: '1.16.5',
 	}
 	// connect bot to server
 	const bot = mineflayer.createBot(options)
@@ -24,8 +24,6 @@ const connectToServer = () => {
 	connectWS()
 
 	function connectWS() {
-		const reconnectInterval = 3000
-
 		ws.on('message', function incoming(data) {
 			const message = JSON.parse(data)
 			const chatMessage = message.message
