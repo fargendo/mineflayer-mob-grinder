@@ -1,7 +1,7 @@
 const mineflayer = require('mineflayer')
 const autoeat = require('mineflayer-auto-eat')
 const pm2 = require('pm2')
-const parseMessage = require('./parseMessage')
+//const parseMessage = require('./parseMessage')
 const sendToDiscord = require('./sendToDiscord')
 const WebSocket = require('ws')
 const sendChat = require('./sendChat')
@@ -45,17 +45,15 @@ const connectToServer = () => {
 				console.log('Restarting pm2 process...')
 				pm2.restart(pm2Process, () => {})
 			}, 10000)
-			// setTimeout(connectWS, reconnectInterval)
-			// connectToServer.relog()
 		})
 	}
 
 	// Attempts to relog 60s after being called
-	function relog() {
+	function relog(time) {
 		setTimeout(() => {
 			console.log('Attempting to reconnect...')
 			pm2.restart(pm2Process, () => {})
-		}, 60000)
+		}, time)
 	}
 
 	function bindEvents(bot) {
@@ -100,29 +98,40 @@ const connectToServer = () => {
 			}, 1000 * 30)
 
 			console.log('bot spawned')
-			console.log(playersLength)
 
 			bot.on('chat', function (username, message) {
 				sendToDiscord(username, message, ws)
 			})
 
+			//Gold farm killswitch
+			if (pm2Process === 'TJOG') {
+				bot.on('whisper', function (username, message) {
+					console.log(username, message)
+					if (message.includes('log')) {
+						let words = message.split(' ')
+						const minutes = parseInt(words[1])
+						relog(60000 * minutes)
+					}
+				})
+			}
+			//Check for and attack mobs
 			setInterval(() => {
-				// detect wither skeletonf
-				const skeletonFilter = e => e.mobType === 'Wither Skeleton'
+				const skeletonFilter = e => e.mobType === 'Wither Skeleton' // wither skull farm
 
-				// detect enderman
 				const endermanFilter = e =>
-					e.position.y <= 188 && e.position.y >= 186 && e.mobType === 'Enderman'
+					e.position.y <= 188 && e.position.y >= 186 && e.mobType === 'Enderman' // eman farm
 
-				// Mob is either enderman or wither skeleton, only true for eman if in eman farm
-				const mob = bot.nearestEntity(endermanFilter) || bot.nearestEntity(skeletonFilter)
+				const pigmanFilter = e => e.position.y <= 90 && e.mobType === 'Zombified Piglin' // gold farm
+
+				const mob =
+					bot.nearestEntity(endermanFilter) ||
+					bot.nearestEntity(skeletonFilter) ||
+					bot.nearestEntity(pigmanFilter)
 
 				if (!mob) return
 
-				// position of mob
 				const pos = mob.position
-
-				// attack mob
+				// look at and attack mob
 				bot.lookAt(pos, true, () => {
 					bot.attack(mob)
 				})
