@@ -10,11 +10,11 @@ require('dotenv').config()
 
 const connectToServer = () => {
 	let options = {
-		host: 'limitedsurvival.com',
+		host: 'anarchy.fit',
 		port: 25565,
 		username: process.env.MC_USER,
 		password: process.env.MC_PASS,
-		version: '1.16.5',
+		version: '1.16.4',
 	}
 	// connect bot to server
 	const bot = mineflayer.createBot(options)
