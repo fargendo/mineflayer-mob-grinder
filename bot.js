@@ -2,15 +2,15 @@ const mineflayer = require('mineflayer')
 const pm2 = require('pm2')
 const sendToDiscord = require('./sendToDiscord')
 const WebSocket = require('ws')
-const sendChat = require('./sendChat')
+
 const ws = new WebSocket('ws://localhost:9000')
+const handleMessage = require('./ws/handleMessage')
 
 require('dotenv').config()
 
 const connectToServer = () => {
-	const pm2Process = 'fagbot'
 	let options = {
-		host: 'anarchy.fit',
+		host: 'limitedsurvival.com',
 		port: 25565,
 		username: process.env.MC_USER,
 		password: process.env.MC_PASS,
@@ -23,11 +23,13 @@ const connectToServer = () => {
 
 	function connectWS() {
 		ws.on('message', function incoming(data) {
-			const message = JSON.parse(data)
-			const chatMessage = message.message
-			console.log(chatMessage)
+			handleMessage(data, bot, ws)
+			// const message = JSON.parse(data)
 
-			sendChat(bot, chatMessage)
+			// const chatMessage = message.message
+			// console.log(chatMessage)
+
+			// sendChat(bot, chatMessage)
 		})
 		ws.on('open', function open() {
 			console.log('WS re/connected')
@@ -41,7 +43,7 @@ const connectToServer = () => {
 			console.log('WS connection closed.')
 			setTimeout(() => {
 				console.log('Restarting pm2 process...')
-				pm2.restart(pm2Process, () => {})
+				pm2.restart(process.env.PM2, () => {})
 			}, 10000)
 		})
 	}
@@ -52,12 +54,12 @@ const connectToServer = () => {
 		if (end) {
 			setTimeout(() => {
 				console.log('Attempting to reconnect...')
-				pm2.restart(pm2Process, () => {})
+				pm2.restart(process.env.PM2, () => {})
 			}, time * 2)
 		} else {
 			setTimeout(() => {
 				console.log('Attempting to reconnect...')
-				pm2.restart(pm2Process, () => {})
+				pm2.restart(process.env.PM2, () => {})
 			}, time)
 		}
 	}
@@ -102,7 +104,7 @@ const connectToServer = () => {
 			})
 
 			//Gold farm killswitch
-			if (pm2Process === 'TJOG') {
+			if (process.env.PM2 === 'TJOG') {
 				bot.on('whisper', function (username, message) {
 					console.log(username, message)
 					if (message.includes('log')) {
