@@ -1,66 +1,73 @@
 const mineflayer = require('mineflayer')
-const autoeat = require('mineflayer-auto-eat')
 const pm2 = require('pm2')
-const parseMessage = require('./parseMessage')
-const sendToDiscord = require('./sendToDiscord')
-const WebSocket = require('ws')
-const sendChat = require('./sendChat')
-//const ws = new WebSocket('ws://localhost:9000')
-
 require('dotenv').config()
+const WebSocket = require('ws')
+
+const ws = new WebSocket('ws://localhost:9000')
 
 const connectToServer = () => {
-	const pm2Process = 'mister'
+	const pm2Process = process.env.PM2
 	let options = {
-		host: 'anarchy.fit',
+		host: 'netheranarchy.org',
 		port: 25565,
 		username: process.env.MC_USER,
 		password: process.env.MC_PASS,
-		version: '1.16.4',
+		version: '1.16.5',
 	}
 	// connect bot to server
 	const bot = mineflayer.createBot(options)
 	bindEvents(bot)
-	// connectWS()
+	connectWS()
 
-	// function connectWS() {
-	// 	const reconnectInterval = 3000
+	function connectWS() {
+		ws.on('message', function incoming(data) {
+			handleMessage(data, bot, ws)
+			// const message = JSON.parse(data)
 
-	// 	ws.on('message', function incoming(data) {
-	// 		const message = JSON.parse(data)
-	// 		const chatMessage = message.message
-	// 		console.log(chatMessage)
+			// const chatMessage = message.message
+			// console.log(chatMessage)
 
-	// 		sendChat(bot, chatMessage)
-	// 	})
-	// 	ws.on('open', function open() {
-	// 		console.log('WS re/connected')
-	// 	})
+			// sendChat(bot, chatMessage)
+		})
+		ws.on('open', function open() {
+			console.log('WS re/connected')
+		})
 
-	// 	ws.on('error', function (err) {
-	// 		console.log('WS error: ' + err)
-	// 	})
+		ws.on('error', function (err) {
+			console.log('WS error: ' + err)
+		})
 
-	// 	ws.on('close', function () {
-	// 		console.log('WS connection closed.')
-	// 		setTimeout(() => {
-	// 			console.log('Restarting pm2 process...')
-	// 			pm2.restart(pm2Process, () => {})
-	// 		}, 10000)
-	// 		// setTimeout(connectWS, reconnectInterval)
-	// 		// connectToServer.relog()
-	// 	})
-	// }
+		ws.on('close', function () {
+			console.log('WS connection closed.')
+			setTimeout(() => {
+				console.log('Restarting pm2 process...')
+				pm2.restart(process.env.PM2, () => {})
+			}, 10000)
+		})
+	}
 
 	// Attempts to relog 60s after being called
-	function relog() {
-		setTimeout(() => {
-			console.log('Attempting to reconnect...')
-			pm2.restart(pm2Process, () => {})
-		}, 60000)
+	function relog(time = 60000, end = false) {
+		console.log('relogging in ' + time + 'ms')
+		if (end) {
+			setTimeout(() => {
+				console.log('Attempting to reconnect...')
+				pm2.restart(pm2Process, () => {})
+			}, time * 2)
+		} else {
+			setTimeout(() => {
+				console.log('Attempting to reconnect...')
+				pm2.restart(pm2Process, () => {})
+			}, time)
+		}
 	}
 
 	function bindEvents(bot) {
+		function disconnect(time) {
+			console.log('time: ' + time)
+			bot.quit()
+			relog(time)
+		}
 		// On close, relog
 		bot.on('close', () => {
 			console.log("Bot's connection to server has closed.")
@@ -76,47 +83,42 @@ const connectToServer = () => {
 		// On kick, relog
 		bot.on('end', err => {
 			console.log('Bot ended with error: ' + err)
-			if (err == undefined) {
-				console.log('server closed, attempt reconnect in 2 minutes...')
-				setTimeout(() => {
-					console.log('Attempting to reconnect')
-					pm2.restart(pm2Process, () => {})
-				}, 60000 * 2)
-			} else {
-				relog()
+			const payload = {
+				type: 'bot_offline',
+				name: bot.username,
 			}
+			ws.send(JSON.stringify(payload))
+			relog(undefined, true)
 		})
 
 		// Once bot spawns, attack mobType every 626ms
 		bot.once('spawn', () => {
-			// let playersLength
 			console.log('bot spawned')
-			console.log(bot.entity.position.y)
-			// setInterval(() => {
-			// 	playersLength = Object.keys(bot.players).length
-			// 	console.log(playersLength)
-			// 	const body = {
-			// 		type: 'playersLength',
-			// 		playersLength: playersLength,
-			// 	}
-			// 	ws.send(JSON.stringify(body))
-			// }, 1000 * 30)
 
-			// console.log('bot spawned')
-			// console.log(playersLength)
+			const payload = {
+				type: 'bot_online',
+				name: bot.username,
+			}
+			ws.send(JSON.stringify(payload))
 
-			// bot.on('chat', function (username, message) {
-			// 	sendToDiscord(username, message, ws)
-			// })
-
-			// bot._client.on('entity_velocity', v => {
-			// 	console.log(v)
-			// 	if (bot.entity.id !== v.entityId) return
-
-			// 	bot.entity.velocity.x = v.velocityX
-			// 	bot.entity.velocity.y = v.velocityY
-			// 	bot.entity.velocity.z = v.velocityZ
-			// })
+			//Gold farm killswitch
+			if (pm2Process === 'thejoyofgambling') {
+				bot.on('whisper', function (username, message) {
+					//console.log(jsonMsg)
+					console.log(username)
+					console.log(message)
+					//relog(10000)
+					if (message.includes('log')) {
+						let words = message.split(' ')
+						let minutes
+						if ((minutes = parseInt(words[1]))) {
+							if (minutes <= 360) {
+								disconnect(60000 * minutes)
+							}
+						}
+					}
+				})
+			}
 
 			setInterval(() => {
 				console.log(bot.entity.position.y)
