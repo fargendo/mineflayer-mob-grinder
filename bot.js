@@ -17,34 +17,6 @@ const connectToServer = () => {
 	// connect bot to server
 	const bot = mineflayer.createBot(options)
 	bindEvents(bot)
-	connectWS()
-
-	function connectWS() {
-		ws.on('message', function incoming(data) {
-			handleMessage(data, bot, ws)
-			// const message = JSON.parse(data)
-
-			// const chatMessage = message.message
-			// console.log(chatMessage)
-
-			// sendChat(bot, chatMessage)
-		})
-		ws.on('open', function open() {
-			console.log('WS re/connected')
-		})
-
-		ws.on('error', function (err) {
-			console.log('WS error: ' + err)
-		})
-
-		ws.on('close', function () {
-			console.log('WS connection closed.')
-			setTimeout(() => {
-				console.log('Restarting pm2 process...')
-				pm2.restart(process.env.PM2, () => {})
-			}, 10000)
-		})
-	}
 
 	// Attempts to relog 60s after being called
 	function relog(time = 60000, end = false) {
