@@ -29,15 +29,21 @@ const handleMessage = (data, bot, ws) => {
 			activeBots: onlineAccounts,
 			type: 'status_response',
 		}
-		//console.log(onlineAccounts)
+
+		console.log('online accounts: ' + onlineAccounts)
 		ws.send(JSON.stringify(payloadOut))
 	}
 	if (type === 'restart') {
+		const payloadOut = {
+			type: 'status',
+		}
+		ws.send(JSON.stringify(payloadOut))
+
 		restart(payload.botName)
 	}
-	if (type === 'stop') {
-		stop(payload.botName)
-	}
+	// if (type === 'stop') {
+	// 	stop(payload.botName)
+	// }
 }
 
 module.exports = handleMessage

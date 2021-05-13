@@ -79,13 +79,23 @@ const connectToServer = () => {
 
 		// On kick, relog
 		bot.on('end', err => {
-			console.log('Bot ended with error: ' + err)
+			console.log(err)
+			const payload = {
+				type: 'bot_offline',
+				name: bot.username,
+			}
+			ws.send(JSON.stringify(payload))
 			relog(undefined, true)
 		})
 
 		// Once bot spawns, attack mobType every 626ms
 		bot.once('spawn', () => {
 			let playersLength
+			const payload = {
+				type: 'bot_online',
+				name: bot.username,
+			}
+			ws.send(JSON.stringify(payload))
 
 			setInterval(() => {
 				playersLength = Object.keys(bot.players).length
@@ -104,7 +114,7 @@ const connectToServer = () => {
 			})
 
 			//Gold farm killswitch
-			if (process.env.PM2 === 'TJOG') {
+			if (process.env.PM2 === 'thejoyofgambling') {
 				bot.on('whisper', function (username, message) {
 					console.log(username, message)
 					if (message.includes('log')) {
