@@ -4,6 +4,7 @@ require('dotenv').config()
 const WebSocket = require('ws')
 
 const ws = new WebSocket('ws://localhost:9000')
+const handlePayload = require('./ws/handlePayload')
 
 const connectToServer = () => {
 	const pm2Process = process.env.PM2
@@ -21,13 +22,7 @@ const connectToServer = () => {
 
 	function connectWS() {
 		ws.on('message', function incoming(data) {
-			handleMessage(data, bot, ws)
-			// const message = JSON.parse(data)
-
-			// const chatMessage = message.message
-			// console.log(chatMessage)
-
-			// sendChat(bot, chatMessage)
+			handlePayload(data, bot, ws)
 		})
 		ws.on('open', function open() {
 			console.log('WS re/connected')
@@ -121,7 +116,7 @@ const connectToServer = () => {
 			}
 
 			setInterval(() => {
-				console.log(bot.entity.position.y)
+				//console.log(bot.entity.position.y)
 				// detect wither skeletonf
 				const skeletonFilter = e => e.mobType === 'Wither Skeleton'
 
