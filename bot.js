@@ -1,10 +1,10 @@
 const mineflayer = require('mineflayer')
 const pm2 = require('pm2')
-const sendToDiscord = require('./sendToDiscord')
+const sendToDiscord = require('./discord/sendToDiscord')
 const WebSocket = require('ws')
 
 const ws = new WebSocket('ws://localhost:9000')
-const handleMessage = require('./ws/handleMessage')
+const handlePayload = require('./ws/handlePayload')
 
 require('dotenv').config()
 
@@ -18,12 +18,12 @@ const connectToServer = () => {
 	}
 	// connect bot to server
 	const bot = mineflayer.createBot(options)
-	bindEvents(bot)
+	bindEvents()
 	connectWS()
 
 	function connectWS() {
 		ws.on('message', function incoming(data) {
-			handleMessage(data, bot, ws)
+			handlePayload(data, bot, ws)
 			// const message = JSON.parse(data)
 
 			// const chatMessage = message.message
@@ -64,7 +64,9 @@ const connectToServer = () => {
 		}
 	}
 
-	function bindEvents(bot) {
+	function isPlayerOnline() {}
+
+	function bindEvents() {
 		// On close, relog
 		bot.on('close', () => {
 			console.log("Bot's connection to server has closed.")
@@ -97,15 +99,15 @@ const connectToServer = () => {
 			}
 			ws.send(JSON.stringify(payload))
 
-			setInterval(() => {
-				playersLength = Object.keys(bot.players).length
-				console.log(playersLength)
-				const body = {
-					type: 'playersLength',
-					playersLength: playersLength,
-				}
-				ws.send(JSON.stringify(body))
-			}, 1000 * 30)
+			// setInterval(() => {
+			// 	playersLength = Object.keys(bot.players).length
+			// 	console.log(playersLength)
+			// 	const body = {
+			// 		type: 'playersLength',
+			// 		playersLength: playersLength,
+			// 	}
+			// 	ws.send(JSON.stringify(body))
+			// }, 1000 * 30)
 
 			console.log('bot spawned')
 
