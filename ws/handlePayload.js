@@ -1,8 +1,4 @@
-const restart = require('../actions/restart')
-const sendChat = require('../chat/sendChat')
-const stop = require('../actions/stop')
-
-const handleMessage = (data, bot, ws) => {
+const handlePayload = (data, bot, ws) => {
 	const payload = JSON.parse(data)
 	const type = payload.type
 
@@ -31,4 +27,4 @@ const handleMessage = (data, bot, ws) => {
 	}
 }
 
-module.exports = handleMessage
+module.exports = handlePayload
