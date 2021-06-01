@@ -4,6 +4,9 @@ require('dotenv').config()
 const WebSocket = require('ws')
 
 const ws = new WebSocket('ws://localhost:9000')
+const handlePayload = require('./ws/handlePayload')
+
+require('dotenv').config()
 
 const connectToServer = () => {
 	const pm2Process = process.env.PM2
@@ -12,11 +15,33 @@ const connectToServer = () => {
 		port: 25565,
 		username: process.env.MC_USER,
 		password: process.env.MC_PASS,
-		version: '1.16.5',
+		version: '1.16.4',
 	}
 	// connect bot to server
 	const bot = mineflayer.createBot(options)
 	bindEvents(bot)
+	connectWS()
+
+	function connectWS() {
+		ws.on('message', function incoming(data) {
+			handlePayload(data, bot, ws)
+		})
+		ws.on('open', function open() {
+			console.log('WS re/connected')
+		})
+
+		ws.on('error', function (err) {
+			console.log('WS error: ' + err)
+		})
+
+		ws.on('close', function () {
+			console.log('WS connection closed.')
+			setTimeout(() => {
+				console.log('Restarting pm2 process...')
+				pm2.restart(process.env.PM2, () => {})
+			}, 10000)
+		})
+	}
 
 	// Attempts to relog 60s after being called
 	function relog(time = 60000, end = false) {
