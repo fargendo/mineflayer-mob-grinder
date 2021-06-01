@@ -111,9 +111,9 @@ const connectToServer = () => {
 
 			console.log('bot spawned')
 
-			bot.on('chat', function (username, message) {
-				sendToDiscord(username, message, ws)
-			})
+			// bot.on('chat', function (username, message) {
+			// 	sendToDiscord(username, message, ws)
+			// })
 
 			//Gold farm killswitch
 			if (process.env.PM2 === 'thejoyofgambling') {
