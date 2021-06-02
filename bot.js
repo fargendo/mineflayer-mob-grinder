@@ -99,21 +99,21 @@ const connectToServer = () => {
 			}
 			ws.send(JSON.stringify(payload))
 
-			// setInterval(() => {
-			// 	playersLength = Object.keys(bot.players).length
-			// 	console.log(playersLength)
-			// 	const body = {
-			// 		type: 'playersLength',
-			// 		playersLength: playersLength,
-			// 	}
-			// 	ws.send(JSON.stringify(body))
-			// }, 1000 * 30)
+		        setInterval(() => {
+			 	playersLength = Object.keys(bot.players).length
+			 	console.log(playersLength)
+			 	const body = {
+			 		type: 'playersLength',
+			 		playersLength: playersLength,
+			 	}
+			 	ws.send(JSON.stringify(body))
+			 }, 1000 * 30)
 
 			console.log('bot spawned')
 
-			// bot.on('chat', function (username, message) {
-			// 	sendToDiscord(username, message, ws)
-			// })
+			 bot.on('chat', function (username, message) {
+			 	sendToDiscord(username, message, ws)
+			 })
 
 			//Gold farm killswitch
 			if (process.env.PM2 === 'thejoyofgambling') {
