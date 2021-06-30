@@ -11,7 +11,7 @@ require('dotenv').config()
 const connectToServer = () => {
 	const pm2Process = process.env.PM2
 	let options = {
-		host: 'netheranarchy.org',
+		host: 'destroymc.net',
 		port: 25565,
 		username: process.env.MC_USER,
 		password: process.env.MC_PASS,
